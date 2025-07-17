@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conjuntos | Lencería None</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(180deg, #0d0d0d 0%, #1a001a 100%);
+      color: #fdfdfd;
+    }
+
+    header {
+      background-color: #1a001a;
+      padding: 30px 0;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(255, 0, 255, 0.2);
+    }
+
+    header img {
+      max-width: 220px;
+      filter: drop-shadow(0 0 10px #ff66cc);
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      background-color: #2c0032;
+      padding: 20px;
+      flex-wrap: wrap;
+    }
+
+    nav a, nav button {
+      text-decoration: none;
+      background-color: #b300b3;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-weight: bold;
+      transition: 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+
+    nav a:hover, nav button:hover {
+      background-color: #ff33cc;
+    }
+
+    .admin-btn {
+      background-color: #333 !important;
+      font-size: 12px;
+      padding: 8px 16px;
+      opacity: 0.6;
+    }
+
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .photo-container {
+      position: relative;
+    }
+
+    .photo-container img {
+      width: 200px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(255, 0, 255, 0.3);
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 4px 8px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .photo-container.show-delete .delete-btn {
+      display: block;
+    }
+
+    .admin-controls {
+      text-align: center;
+      margin-top: 30px;
+      display: none;
+    }
+
+    .admin-controls input,
+    .admin-controls button {
+      margin: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Montserrat';
+    }
+
+    .admin-controls input[type="file"] {
+      color: white;
+      background-color: #333;
+    }
+
+    .admin-controls button {
+      background-color: #ff33cc;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .admin-controls button:hover {
+      background-color: #ff66cc;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      background-color: #0d0d0d;
+      font-size: 14px;
+      color: #999;
+      border-top: 1px solid #333;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="logo.jpg" alt="Logo Lencería None">
+  </header>
+
+  <nav>
+    <a href="index.html">⬅ Volver al inicio</a>
+    <button class="admin-btn" onclick="mostrarPassword()">🔒 Agregar o eliminar fotos</button>
+  </nav>
+
+  <div class="admin-controls" id="admin">
+    <input type="file" id="fileInput" accept="image/*">
+    <button onclick="agregarFoto()">Agregar foto</button>
+  </div>
+
+  <div class="gallery" id="galeria">
+    <div class="photo-container">
+      <img src="conjunto1.png" alt="Conjunto 1">
+      <button class="delete-btn" onclick="eliminarFoto(this)">Eliminar</button>
+    </div>
+    <div class="photo-container">
+      <img src="conjunto2.png" alt="Conjunto 2">
+      <button class="delete-btn" onclick="eliminarFoto(this)">Eliminar</button>
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2025 Lencería None. Todos los derechos reservados.
+  </footer>
+
+  <script>
+    let acceso = false;
+    let intentosFallidos = 0;
+    let bloqueadoHasta = null;
+
+    function mostrarPassword() {
+      const ahora = new Date();
+      if (bloqueadoHasta && ahora < bloqueadoHasta) {
+        const minutosRestantes = Math.ceil((bloqueadoHasta - ahora) / 60000);
+        alert("Demasiados intentos. Esperá " + minutosRestantes + " minuto(s) para volver a intentar.");
+        return;
+      }
+
+      const clave = prompt("Ingresá la contraseña:");
+      if (clave === "Eze123") {
+        acceso = true;
+        document.getElementById("admin").style.display = "block";
+
+        const fotos = document.querySelectorAll(".photo-container");
+        fotos.forEach(foto => foto.classList.add("show-delete"));
+
+        alert("Acceso concedido.");
+        intentosFallidos = 0;
+      } else {
+        intentosFallidos++;
+        if (intentosFallidos >= 3) {
+          bloqueadoHasta = new Date(new Date().getTime() + 5 * 60000);
+          alert("3 intentos fallidos. Bloqueado por 5 minutos.");
+        } else {
+          alert("Contraseña incorrecta.");
+        }
+      }
+    }
+
+    function agregarFoto() {
+      if (!acceso) return;
+      const input = document.getElementById("fileInput");
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const contenedor = document.createElement("div");
+          contenedor.className = "photo-container show-delete";
+
+          const img = document.createElement("img");
+          img.src = e.target.result;
+
+          const btn = document.createElement("button");
+          btn.className = "delete-btn";
+          btn.textContent = "Eliminar";
+          btn.onclick = function () {
+            eliminarFoto(btn);
+          };
+
+          contenedor.appendChild(img);
+          contenedor.appendChild(btn);
+          document.getElementById("galeria").appendChild(contenedor);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function eliminarFoto(boton) {
+      if (!acceso) return;
+      const contenedor = boton.parentElement;
+      contenedor.remove();
+    }
+  </script>
+
+</body>
+</html>
